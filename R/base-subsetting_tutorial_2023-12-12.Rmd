@@ -1,0 +1,26 @@
+---
+title: "Subsetting in Base R Tutorial"
+author: "Dave Lovell"
+date: "2023-12-12"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+
+<!-- ## Libraries -->
+
+```{r libraries, message = FALSE, include=FALSE}
+library(learnr)
+library(dplyr)
+library(stringr)
+```
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+
+## Introduction
+
