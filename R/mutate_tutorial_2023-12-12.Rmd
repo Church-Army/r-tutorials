@@ -15,7 +15,7 @@ library(dplyr)
 library(stringr)
 ```
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 trivial <- 
@@ -161,3 +161,128 @@ By specifying the column name as the name of an existing column, we can overwrit
 mutate(trivial,  )
 ```
 
+### Using/replacing columns within a single `mutate()`
+
+Columns created as part of a `mutate()` call can used or replaced within the same mutate call:
+
+```{r multiple_columns}
+mutate(trivial,
+       halved     = numbers / 2,
+       doubled    = halved * 2 * 2,
+       quadrupled = doubled * 2,
+       halved = halved ^ 3
+       )
+```
+
+## Grouped mutates
+
+Sometimes we want to group certain rows together for a mutate operation. We can do this by using `dplyr::group_by()`. For example:
+
+```{r group_by_demo}
+trivial <- mutate(trivial, is_even = numbers %% 2 == 0)
+trivial
+
+trivial |> 
+  group_by(is_even) |> 
+  mutate(set_mean = mean(numbers))
+```
+The argument to `group_by()` is an expression, so `group_by(is_even)` could also be expressed as `group_by(is_even = numbers %% 2 == 0)`:
+
+```{r explicit_demonstration_of_group_by_expression}
+trivial |> 
+  group_by(is_even = numbers %% 2 == 0) |> 
+  mutate(set_mean = mean(numbers))
+```
+
+Can you group `trivial` by `numbers >= 3` and add a new column that contains the sum of each number with the `max()` of the group?
+
+```{r group_by_test, exercise = TRUE}
+trivial |> 
+  group_by() |> 
+  mutate(set_max_plus_num = )
+```
+
+## Any Questions?
+
+## Other arguments to mutate
+
+### `.by` (experimental)
+
+Use this for 'inline' grouping. Note that this can only be a selection of columns, not an expression.
+
+```{r by_eg}
+trivial |> 
+  mutate(is_even = numbers %% 2 == 0) |> 
+  mutate(sum = sum(numbers), .by = is_even)
+```
+
+### .before and . after
+
+New columns appear on the left-hand-side of the output by default. If you want a new column to appear somewhere else, you can use these:
+
+```{r before_after_eg}
+mutate(trivial, doubled = numbers * 2, .before = letters)
+```
+
+### .keep
+
+Sometimes useful but it might confuse readers so bear that in mind. `.keep` Can be one of `c("all", "used", "unused", "none")` (`"all"` is the default):
+
+```{r keep_eg}
+## adding a grouping column to demonstrate how it's handled
+trivial <- 
+  mutate(trivial, is_even = numbers %% 2 == 0) |> 
+  group_by(is_even)
+
+mutate(trivial, mean = mean(numbers), .keep = "all") #default behaviour
+mutate(trivial, mean = mean(numbers), .keep = "used")
+mutate(trivial, mean = mean(numbers), .keep = "unused")
+mutate(trivial, mean = mean(numbers), .keep = "none")
+```
+
+### Finally:
+
+```{r finally}
+mutate(trivial, sum = mean(numbers), .keep = "none") |> 
+  distinct()
+
+summarise(trivial, sum = mean(numbers))
+```
+
+## Quiz
+
+```{r quiz, echo = FALSE}
+quiz(
+  caption = "End of session quiz",
+  
+  question(
+    "Which of these is true of the object returned by `mutate()`",
+    answer("It will always be a tibble"),
+    answer("It will always have more columns that `.data`"),
+    answer("It will always be a type of data frame", correct = TRUE),
+    answer("It will always have at least one row")
+  ),
+  
+  question(
+    "How many named arguments does `mutate()` have?",
+    answer("4"),
+    answer("5"),
+    answer("6", correct = TRUE),
+    answer("7")
+  ),
+  
+  question(
+    "What's the first place that `mutate()` attempts to evaluate expressions in `...`?",
+    answer("The global environment"),
+    answer("An environment constructed from the columns of `data`", correct = TRUE)
+  ),
+  
+  question(
+    "If _n_ is the number of rows in `.data`, what are acceptable lenghts for expressions passed to `...`?",
+    answer("Only n"),
+    answer("Any length between 1 and n"),
+    answer("Any length that is a factor of n"),
+    answer("Any positive length is acceptable"),
+    answer("One or n only", correct = TRUE)
+  )
+)
