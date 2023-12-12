@@ -2,15 +2,162 @@
 title: "Mutate Tutorial"
 author: "Dave Lovell"
 date: "2023-12-12"
-output: html_document
+output: learnr::tutorial
+runtime: shiny_prerendered
 ---
+
+
+<!-- ## Libraries -->
+
+```{r libraries, message = FALSE, include=FALSE}
+library(learnr)
+library(dplyr)
+library(stringr)
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+trivial <- 
+  tibble(numbers = 1:4, letters = letters[1:4])
 ```
 
-## Libraries
 
-```{r libraries}
-library(learnr)
+## Introduction
+
+`mutate()` is one of the 'big 5' `dplyr` functions. These are:
+
+* `select()` for picking columns
+* `filter()` for picking rows
+* `mutate()` for creating and modifying columns
+* `summarise()` for summarising rows
+* `reframe()` is just a variant of summarise really
+
+### Making a trivial tibble 
+
+Let's make a trivial tibble to practice mutating on:
+
+```{r, trivial_tibble}
+trivial <- 
+  tibble(numbers = 1:4, letters = letters[1:4])
+
+head(trivial)
 ```
+
+## Required inputs & expected outputs
+
+### Minimum function requirements:
+
+Mutate only technically requires one argument, `.data`, which is the data frame on which the mutate operation will be performed. If no other arguments are specified, `mutate()` just returns `.data`.:
+
+```{r most_basic_mutate_possible}
+mutate(trivial) 
+```
+
+### Returned data type:
+
+`mutate()` always returns an object with the same type as `.data`:
+
+```{r mutating_a_tibble}
+class(mutate(trivial))
+```
+
+```{r mutating_a_dataframe}
+dataframe <- data.frame(a = 1:10)
+class(mutate(dataframe))
+```
+
+### Accepted types for `.data`
+
+`.data` must be a data frame or an extension thereof (e.g. a tibble):
+
+```{r type_of_data}
+foo <- matrix(1:4, nrow = 2)
+
+tryCatch(mutate(foo), error = \(cnd) cnd$message)
+```
+
+### Summary
+
+* `mutate()` needs a `.data` argument
+* `.data` must be a type of dataframe
+* `mutate()` always returns something with the same type as `.data`
+
+## Actual mutate use
+
+### Using the dots
+
+Of course, `mutate()` most minimal behaviour is pretty useless, because it just returns whatever we put in. The real joy of mutate is in its powerful `...` argument. By passing *expressions* to  `...`, we can specify any number of new columns to add to our dataframe:
+
+```{r using_dots}
+mutate(trivial,
+       new_numbers = numbers / 4,
+       cool_numbers = new_numbers * 10)
+```
+
+### Evaluation environment
+
+A lot of mutate's utility comes from the fact that anything passed to `...` is evaluated using the columns within `.data` as the primary evaluation environment. Hence these two calls are equivalent:
+
+```{r evaluation_environment, eval = FALSE}
+trivial$doubled_numbers <- trivial$numbers * 2
+
+trivial <- mutate(trivial, doubled_numbers = numbers * 2)
+```
+
+With that in mind, can you write a `mutate()` operation that's equivalent to the following code in the tutorial block below?
+
+```{r, eval = FALSE}
+trivial$big_letters <- str_to_upper(trivial$letters)
+```
+
+```{r, mutate_equivalent, exercise = TRUE}
+trivial <- mutate(trivial, )
+```
+
+```{r mutate_equivalent-solution}
+trivial <- mutate(trivial, big_letters <- str_to_upper(letters))
+```
+
+### Variable lookup
+
+If a variable is not found within the evaluation environment (i.e it's not the name of a column in `.data`), then R will search for it in the environment from which `mutate()` was called. 
+
+Take a look at this code:
+
+```{r environments_example, eval = FALSE}
+letters <- c("z", "y", "x", "w")
+
+mutate(trivial, big = str_to_upper(letters))
+```
+
+```{r what_will_big_b, echo = FALSE}
+question(
+  "What will `letters$big` be if the code is run?",
+  answer("Z  Y  X  W"),
+  answer("A  B  C  D", correct = TRUE),
+  answer("NA"),
+  answer("1  2  3  4")
+)
+```
+
+## Ways to use `mutate()`
+
+Mutate can be used to add new columns to a dataframe, or to replace existing columns. You can also operate on columns new columns within the same `mutate()` that creates them.
+
+### Creating new columns
+
+Add a new column to `trivial` that contains the values of `trivial$numbers` multiplied by three. Name it something sensible:
+
+```{r doubling_numbers_new_column, exercise = TRUE}
+mutate(trivial, )
+```
+
+### Overwriting existing columns
+
+By specifying the column name as the name of an existing column, we can overwrite that column. Replace `trivial$numbers` with something else:
+
+```{r replacing_numbers, exercise = TRUE}
+mutate(trivial,  )
+```
+
