@@ -18,9 +18,50 @@ library(stringr)
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-
+x <- c(a = 1, b = 2, c = 3, d = 4)
 ```
 
+# Subsetting operators
 
-## Introduction
+There are three subsetting operators in R: `[`, `[[` and `$`. `[[` and `$` are closely related to one another.
+
+## Subsetting with `[`
+
+I think of `[` as the most basic subsetting operator. You can use it in various ways:
+
+### 1. With a numeric vector
+
+```{r numeric_subset_basic}
+x <- c(a = 1, b = 2, c = 3, d = 4)
+
+x[4]
+x[2:3]
+x[c(1,3)]
+```
+
+### 2. With a logical vector
+
+```{r logical_subset_basic}
+x[c(TRUE, TRUE, TRUE, TRUE)]
+x[c(TRUE, FALSE, FALSE, TRUE)]
+```
+
+Logical vectors are 'recycled' if they are shorter than the vector being subset:
+
+```{r recycled}
+x[c(TRUE, FALSE)]
+x[c(TRUE, TRUE)]
+x[TRUE]
+x[FALSE]
+```
+
+### 3. With a character vector
+
+If a vector has names, it can be subset with a character vector:
+
+```{r character_subsetting}
+x["a"]
+
+
+```
 
